@@ -561,7 +561,7 @@ func (mw *MainWindow) runProviderAuthFlow(parent *gtk.Dialog, providerID string,
 	label, _ := authBtn.GetLabel()
 	if label == "Complete Auth" {
 		provider.GoRPC(func() error {
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 			defer cancel()
 			_, err := mw.providerMgr.CompleteAuth(ctx, providerID, nil)
 			if err != nil {
@@ -592,7 +592,7 @@ func (mw *MainWindow) runProviderAuthFlow(parent *gtk.Dialog, providerID string,
 	}
 
 	provider.GoRPC(func() error {
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		res, err := mw.providerMgr.InitiateAuth(ctx, providerID, params)
 		if err != nil {
