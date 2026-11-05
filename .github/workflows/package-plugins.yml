@@ -108,8 +108,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd "../${{ env.PLUGIN_DIR }}"
-          mkdir -p certifi
-          python -c "import certifi, shutil; shutil.copy(certifi.where(), 'certifi/cacert.pem')"
+          python -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
           pyinstaller \
             --noconfirm --clean --onedir \
             --name="${{ env.BINARY_NAME }}" \
@@ -139,7 +138,7 @@ jobs:
             --collect-all=certifi \
             --add-data="generated:generated" \
             --add-data="certifi/cacert.pem:certifi" \
-            --add-binary=".tools/bin/node:." \
+            --add-binary=".tools/bin/node.exe:." \
             --exclude-module=tkinter \
             --exclude-module=unittest \
             --exclude-module=test \
@@ -297,8 +296,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd "../${{ env.PLUGIN_DIR }}"
-          mkdir -p certifi
-          python -c "import certifi, shutil; shutil.copy(certifi.where(), 'certifi/cacert.pem')"
+          python -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
           pyinstaller \
             --noconfirm --clean --onedir \
             --name="${{ env.BINARY_NAME }}" \
@@ -617,7 +615,7 @@ jobs:
           APPIMAGETOOL_EXEC='./appimagetool-extracted/AppRun'
           APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-amd64-${VERSION}.AppImage"
           ARCH=x86_64 "${APPIMAGETOOL_EXEC}" \
-            --comp xz \
+            --comp zstd \
             appdir-amd64 \
             "${APPIMAGE_OUT}"
           chmod +x "${APPIMAGE_OUT}"
@@ -673,15 +671,14 @@ jobs:
             DAEMON_PORT='${{ env.DAEMON_PORT }}'
             VERSION='${{ steps.version.outputs.ver }}'
             python3 -m venv "${PLUGIN_DIR}/.venv"
-            PYTHON="${PLUGIN_DIR}/.venv/bin/python3"
-            PIP="${PLUGIN_DIR}/.venv/bin/pip"
+            PYTHON="/workspace/${PLUGIN_DIR}/.venv/bin/python3"
+            PIP="/workspace/${PLUGIN_DIR}/.venv/bin/pip"
             "$PIP" install --upgrade pip
             "$PIP" install -r "${PLUGIN_DIR}/requirements.txt"
             "$PIP" install 'pyinstaller==${{ env.PYINSTALLER_VERSION }}'
             cd "${PLUGIN_DIR}"
             test -f generated/music_provider_pb2.py
-            mkdir -p certifi
-            "$PYTHON" -c "import certifi, shutil; shutil.copy(certifi.where(), 'certifi/cacert.pem')"
+            "$PYTHON" -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
             "$PYTHON" -m pyinstaller \
               --noconfirm --clean --onedir \
               --name="${BINARY_NAME}" \
@@ -807,7 +804,7 @@ jobs:
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-arm64-${VERSION}.AppImage"
             ARCH=aarch64 ./appimagetool-arm64-extracted/AppRun \
-              --comp xz \
+              --comp zstd \
               "${APPDIR}" \
               "${APPIMAGE_OUT}"
             chmod +x "${APPIMAGE_OUT}"
@@ -859,15 +856,14 @@ jobs:
             DAEMON_PORT='${{ env.DAEMON_PORT }}'
             VERSION='${{ steps.version.outputs.ver }}'
             python3 -m venv "${PLUGIN_DIR}/.venv"
-            PYTHON="${PLUGIN_DIR}/.venv/bin/python3"
-            PIP="${PLUGIN_DIR}/.venv/bin/pip"
+            PYTHON="/workspace/${PLUGIN_DIR}/.venv/bin/python3"
+            PIP="/workspace/${PLUGIN_DIR}/.venv/bin/pip"
             "$PIP" install --upgrade pip
             "$PIP" install --timeout 600 -r "${PLUGIN_DIR}/requirements.txt"
             "$PIP" install 'pyinstaller==${{ env.PYINSTALLER_VERSION }}'
             cd "${PLUGIN_DIR}"
             test -f generated/music_provider_pb2.py
-            mkdir -p certifi
-            "$PYTHON" -c "import certifi, shutil; shutil.copy(certifi.where(), 'certifi/cacert.pem')"
+            "$PYTHON" -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
             "$PYTHON" -m pyinstaller \
               --noconfirm --clean --onedir \
               --name="${BINARY_NAME}" \
@@ -993,7 +989,7 @@ jobs:
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-riscv64-${VERSION}.AppImage"
             ARCH=riscv64 ./appimagetool-riscv64-extracted/AppRun \
-              --comp xz \
+              --comp zstd \
               "${APPDIR}" \
               "${APPIMAGE_OUT}"
             chmod +x "${APPIMAGE_OUT}"
