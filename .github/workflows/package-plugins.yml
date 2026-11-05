@@ -82,8 +82,8 @@ jobs:
         shell: powershell
         run: |
           python -m pip install --upgrade pip
-          pip install -r "..\${{ env.PLUGIN_DIR }}\requirements.txt"
-          pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
+          python -m pip install -r "..\${{ env.PLUGIN_DIR }}\requirements.txt"
+          python -m pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
       - name: Generate protobuf stubs
         shell: bash
         run: |
@@ -232,7 +232,7 @@ jobs:
       - name: Install Inno Setup
         if: matrix.arch == 'amd64'
         shell: powershell
-        run: choco install innosetup --version ${{ env.INNO_SETUP_VERSION }} --no-progress -y
+        run: choco upgrade innosetup --no-progress -y
       - name: Install Inno Setup (ARM64 via direct download)
         if: matrix.arch == 'arm64'
         shell: powershell
@@ -283,8 +283,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r "../${{ env.PLUGIN_DIR }}/requirements.txt"
-          pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
+          python -m pip install -r "../${{ env.PLUGIN_DIR }}/requirements.txt"
+          python -m pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
       - name: Generate protobuf stubs
         run: |
           cd "${{ github.workspace }}"
@@ -486,8 +486,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r "../${{ env.PLUGIN_DIR }}/requirements.txt"
-          pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
+          python -m pip install -r "../${{ env.PLUGIN_DIR }}/requirements.txt"
+          python -m pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
       - name: Build plugin with package.sh
         env:
           YTDLP_SKIP_NIGHTLY: '0'
@@ -673,9 +673,9 @@ jobs:
             python3 -m venv "${PLUGIN_DIR}/.venv"
             PYTHON="/workspace/${PLUGIN_DIR}/.venv/bin/python3"
             PIP="/workspace/${PLUGIN_DIR}/.venv/bin/pip"
-            "$PIP" install --upgrade pip
-            "$PIP" install -r "${PLUGIN_DIR}/requirements.txt"
-            "$PIP" install 'pyinstaller==${{ env.PYINSTALLER_VERSION }}'
+            "$PYTHON" -m pip install --upgrade pip
+            "$PYTHON" -m pip install -r "${PLUGIN_DIR}/requirements.txt"
+            "$PYTHON" -m pip install 'pyinstaller==${{ env.PYINSTALLER_VERSION }}'
             cd "${PLUGIN_DIR}"
             test -f generated/music_provider_pb2.py
             "$PYTHON" -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
@@ -858,9 +858,9 @@ jobs:
             python3 -m venv "${PLUGIN_DIR}/.venv"
             PYTHON="/workspace/${PLUGIN_DIR}/.venv/bin/python3"
             PIP="/workspace/${PLUGIN_DIR}/.venv/bin/pip"
-            "$PIP" install --upgrade pip
-            "$PIP" install --timeout 600 -r "${PLUGIN_DIR}/requirements.txt"
-            "$PIP" install 'pyinstaller==${{ env.PYINSTALLER_VERSION }}'
+            "$PYTHON" -m pip install --upgrade pip
+            "$PYTHON" -m pip install --timeout 600 -r "${PLUGIN_DIR}/requirements.txt"
+            "$PYTHON" -m pip install 'pyinstaller==${{ env.PYINSTALLER_VERSION }}'
             cd "${PLUGIN_DIR}"
             test -f generated/music_provider_pb2.py
             "$PYTHON" -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"

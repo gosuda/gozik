@@ -412,20 +412,7 @@ jobs:
           }
 
           if [ "$primary_release_tag" = "latest" ]; then
-            git tag -f latest "$publish_sha"
-            git push --force origin refs/tags/latest
             publish_release latest true
           else
-            if ! git rev-parse -q --verify "refs/tags/${primary_release_tag}" >/dev/null; then
-              git tag "${primary_release_tag}" "$publish_sha"
-              git push origin "refs/tags/${primary_release_tag}"
-            fi
-
             publish_release "$primary_release_tag" false
-
-            if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-              git tag -f latest "$publish_sha"
-              git push --force origin refs/tags/latest
-              publish_release latest true
-            fi
           fi
