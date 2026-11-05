@@ -81,9 +81,9 @@ jobs:
       - name: Install Python dependencies
         shell: powershell
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r "..\${{ env.PLUGIN_DIR }}\requirements.txt"
-          python -m pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
+          & "$env:pythonLocation\python.exe" -m pip install --upgrade pip
+          & "$env:pythonLocation\python.exe" -m pip install -r "..\${{ env.PLUGIN_DIR }}\requirements.txt"
+          & "$env:pythonLocation\python.exe" -m pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
       - name: Generate protobuf stubs
         shell: bash
         run: |
@@ -108,8 +108,8 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd "../${{ env.PLUGIN_DIR }}"
-          python -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
-          pyinstaller \
+          "${pythonLocation}/python.exe" -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
+          "${pythonLocation}/Scripts/pyinstaller.exe" \
             --noconfirm --clean --onedir \
             --name="${{ env.BINARY_NAME }}" \
             --distpath=dist \
@@ -679,7 +679,7 @@ jobs:
             cd "${PLUGIN_DIR}"
             test -f generated/music_provider_pb2.py
             "$PYTHON" -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
-            "$PYTHON" -m pyinstaller \
+            "${PYTHON%/python3}/pyinstaller" \
               --noconfirm --clean --onedir \
               --name="${BINARY_NAME}" \
               --distpath=dist \
@@ -864,7 +864,7 @@ jobs:
             cd "${PLUGIN_DIR}"
             test -f generated/music_provider_pb2.py
             "$PYTHON" -c "import certifi, shutil, os; os.makedirs('certifi', exist_ok=True); shutil.copy(certifi.where(), 'certifi/cacert.pem')"
-            "$PYTHON" -m pyinstaller \
+            "${PYTHON%/python3}/pyinstaller" \
               --noconfirm --clean --onedir \
               --name="${BINARY_NAME}" \
               --distpath=dist \
