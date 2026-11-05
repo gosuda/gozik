@@ -89,7 +89,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd "../${{ env.PLUGIN_DIR }}"
-          bash codegen.sh
+          test -f generated/music_provider_pb2.py
       - name: Download Node.js standalone binary
         shell: powershell
         run: |
@@ -98,7 +98,9 @@ jobs:
           Invoke-WebRequest -Uri $nodeUrl -OutFile $nodeZip -UseBasicParsing
           Expand-Archive -Path $nodeZip -DestinationPath "node_extracted" -Force
           New-Item -ItemType Directory -Path "..\${{ env.PLUGIN_DIR }}\.tools\bin" -Force | Out-Null
-          Copy-Item "node_extracted\node.exe" -Destination "..\${{ env.PLUGIN_DIR }}\.tools\bin\node.exe"
+          $node = Get-ChildItem -Path "node_extracted" -Recurse -Filter "node.exe" | Select-Object -First 1
+          if (-not $node) { Write-Error "node.exe not found in Node.js archive"; exit 1 }
+          Copy-Item $node.FullName -Destination "..\${{ env.PLUGIN_DIR }}\.tools\bin\node.exe"
       - name: Build with PyInstaller
         shell: bash
         env:
@@ -288,7 +290,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd "../${{ env.PLUGIN_DIR }}"
-          bash codegen.sh
+          test -f generated/music_provider_pb2.py
       - name: Build with PyInstaller
         env:
           DEBUG_FLAG: ${{ github.event.inputs.debug_build == 'true' && '--debug=all' || '' }}
@@ -494,6 +496,9 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd "../${{ env.PLUGIN_DIR }}"
+          python -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+          .venv/bin/pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
           bash package.sh
       - name: Derive version
         id: version
@@ -674,7 +679,7 @@ jobs:
             "$PIP" install -r "${PLUGIN_DIR}/requirements.txt"
             "$PIP" install 'pyinstaller==${{ env.PYINSTALLER_VERSION }}'
             cd "${PLUGIN_DIR}"
-            bash codegen.sh
+            test -f generated/music_provider_pb2.py
             mkdir -p certifi
             "$PYTHON" -c "import certifi, shutil; shutil.copy(certifi.where(), 'certifi/cacert.pem')"
             "$PYTHON" -m pyinstaller \
@@ -860,7 +865,7 @@ jobs:
             "$PIP" install --timeout 600 -r "${PLUGIN_DIR}/requirements.txt"
             "$PIP" install 'pyinstaller==${{ env.PYINSTALLER_VERSION }}'
             cd "${PLUGIN_DIR}"
-            bash codegen.sh
+            test -f generated/music_provider_pb2.py
             mkdir -p certifi
             "$PYTHON" -c "import certifi, shutil; shutil.copy(certifi.where(), 'certifi/cacert.pem')"
             "$PYTHON" -m pyinstaller \
@@ -1103,7 +1108,7 @@ jobs:
     name: 'Publish GitHub Release'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: always()
+    if: success()
     needs:
       - build-windows
       - build-macos
