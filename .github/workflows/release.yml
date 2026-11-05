@@ -158,7 +158,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install gtk+3 pkg-config opus opusfile dylibbundler
+          brew install gtk+3 pkg-config opus opusfile dylibbundler ffmpeg
 
       - name: Build gozik
         run: |
@@ -166,10 +166,9 @@ jobs:
           export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
           go build -ldflags="-s -w" -o gozik ./cmd/gozik
 
-      - name: Download ffmpeg
+      - name: Prepare ffmpeg
         run: |
-          curl -L -A "Mozilla/5.0" -o ffmpeg.zip "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip"
-          unzip -o ffmpeg.zip
+          cp "$(brew --prefix)/bin/ffmpeg" ffmpeg
           chmod +x ffmpeg
 
       - name: Assemble app bundle
@@ -235,6 +234,7 @@ jobs:
           APP="Gozik.app"
           mkdir -p "$APP/Contents/Frameworks"
           dylibbundler -od -b -x "$APP/Contents/MacOS/gozik" -d "$APP/Contents/Frameworks/"
+          dylibbundler -od -b -x "$APP/Contents/MacOS/ffmpeg" -d "$APP/Contents/Frameworks/"
 
           # Bundle gdk-pixbuf loaders into Resources so the runtime can point
           # at them with an env var.

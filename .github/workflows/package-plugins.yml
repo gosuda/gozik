@@ -78,7 +78,6 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.python-arch }}
-          cache: pip
       - name: Install Python dependencies
         shell: powershell
         run: |
@@ -278,7 +277,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
       - name: Install build tools
         run: brew install create-dmg
       - name: Install Python dependencies
@@ -481,7 +479,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update
@@ -664,6 +661,7 @@ jobs:
           run: |
             set -euo pipefail
             cd /workspace
+            ln -s /workspace /workspace/gozik
             git clone --depth 1 --branch '${{ env.PLUGIN_VERSION }}' '${{ env.PLUGIN_REPO }}' '${{ env.PLUGIN_DIR }}'
             PLUGIN_DIR='${{ env.PLUGIN_DIR }}'
             BINARY_NAME='${{ env.BINARY_NAME }}'
@@ -849,6 +847,7 @@ jobs:
           run: |
             set -euo pipefail
             cd /workspace
+            ln -s /workspace /workspace/gozik
             git clone --depth 1 --branch '${{ env.PLUGIN_VERSION }}' '${{ env.PLUGIN_REPO }}' '${{ env.PLUGIN_DIR }}'
             PLUGIN_DIR='${{ env.PLUGIN_DIR }}'
             BINARY_NAME='${{ env.BINARY_NAME }}'
