@@ -815,7 +815,6 @@ jobs:
     name: 'Linux RISCV64 — QEMU + PyInstaller + AppImage'
     runs-on: ubuntu-latest
     timeout-minutes: 240
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -833,7 +832,7 @@ jobs:
         uses: uraimo/run-on-arch-action@v2
         with:
           arch: riscv64
-          distro: bookworm
+          distro: ubuntu22.04
           githubToken: ${{ github.token }}
           dockerRunArgs: '--volume ${{ github.workspace }}:/workspace'
           install: |
@@ -974,18 +973,12 @@ jobs:
             exec "${BUNDLE_DST}/${BINARY_NAME}" "$@"
             APPRUN_HEREDOC
             chmod +x "${APPDIR}/AppRun"
-            APPIMAGETOOL='appimagetool-x86_64.AppImage'
-            curl -fsSL -o "$APPIMAGETOOL" \
-              'https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage'
-            chmod +x "$APPIMAGETOOL"
-            "./${APPIMAGETOOL}" --appimage-extract
-            mv squashfs-root appimagetool-riscv64-extracted
+            curl -fsSL -o runtime-riscv64 \
+              'https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-riscv64'
+            mksquashfs "${APPDIR}" gozik-riscv64.squashfs -root-owned -noappend -comp zstd
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-riscv64-${VERSION}.AppImage"
-            ARCH=riscv64 ./appimagetool-riscv64-extracted/AppRun \
-              --comp zstd \
-              "${APPDIR}" \
-              "${APPIMAGE_OUT}"
+            cat runtime-riscv64 gozik-riscv64.squashfs > "${APPIMAGE_OUT}"
             chmod +x "${APPIMAGE_OUT}"
             ls -lh dist-appimage/
             sha256sum "${APPIMAGE_OUT}"
@@ -994,7 +987,7 @@ jobs:
           name: ytmusic-plugin-linux-riscv64
           path: dist-appimage/gozik-ytmusic-plugin-linux-riscv64-*.AppImage
           retention-days: 30
-          if-no-files-found: warn
+          if-no-files-found: error
 
   build-spotify:
     name: 'Spotify ${{ matrix.os }}/${{ matrix.arch }} — Go bundle'

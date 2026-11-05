@@ -82,13 +82,15 @@ if [ "$ARCH" = "riscv64" ]; then
     fi
   fi
 
-  apt-get download -o Dir::Cache::Archives="$RISCV_PKGDIR" \
-    ffmpeg:riscv64 \
-    libavcodec-dev:riscv64 \
-    libavformat-dev:riscv64 \
-    libavutil-dev:riscv64 \
-    libswresample-dev:riscv64 \
-    2>/dev/null || true
+  (
+    cd "$RISCV_PKGDIR"
+    apt-get download \
+      ffmpeg:riscv64 \
+      libavcodec-dev:riscv64 \
+      libavformat-dev:riscv64 \
+      libavutil-dev:riscv64 \
+      libswresample-dev:riscv64
+  )
 
   RISCV_EXTRACT="${BUILD_DIR}/riscv-extract"
   mkdir -p "$RISCV_EXTRACT"
