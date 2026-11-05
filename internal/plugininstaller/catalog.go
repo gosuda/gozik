@@ -13,17 +13,20 @@ import (
 	"time"
 )
 
+const PluginBundleVersion = "plugin-v0.6"
+
 type Plugin struct {
 	ID          string
 	Name        string
+	Version     string
 	Description string
 	Repository  string
 	WebUI       string
 }
 
 var Plugins = []Plugin{
-	{ID: "spotify", Name: "Spotify", Description: "Spotify search and playback with yt-dlp included.", Repository: "https://github.com/gosuda/gozik-spotify", WebUI: "http://127.0.0.1:50055"},
-	{ID: "ytmusic", Name: "YouTube Music", Description: "YouTube Music with its Python and Node.js runtime included.", Repository: "https://github.com/gosuda/gozik-yt-music", WebUI: "http://127.0.0.1:50053"},
+	{ID: "spotify", Name: "Spotify", Version: "v0.6", Description: "Spotify search and playback with yt-dlp included.", Repository: "https://github.com/gosuda/gozik-spotify", WebUI: "http://127.0.0.1:50055"},
+	{ID: "ytmusic", Name: "YouTube Music", Version: "v0.5", Description: "YouTube Music with its Python and Node.js runtime included.", Repository: "https://github.com/gosuda/gozik-yt-music", WebUI: "http://127.0.0.1:50053"},
 }
 
 type Progress func(message string)
@@ -94,7 +97,12 @@ func download(ctx context.Context, id string, progress Progress) (string, error)
 }
 
 func selectAsset(ctx context.Context, id, goos, goarch string) (asset, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/repos/gosuda/gozik/releases?per_page=100", nil)
+	plugin, ok := Lookup(id)
+	if !ok {
+		return asset{}, fmt.Errorf("unknown plugin %q", id)
+	}
+	url := "https://api.github.com/repos/gosuda/gozik/releases/tags/" + PluginBundleVersion
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return asset{}, err
 	}
@@ -107,24 +115,19 @@ func selectAsset(ctx context.Context, id, goos, goarch string) (asset, error) {
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return asset{}, fmt.Errorf("GitHub release lookup failed: %s", response.Status)
+		return asset{}, fmt.Errorf("GitHub release lookup failed for %s: %s", PluginBundleVersion, response.Status)
 	}
-	var releases []release
-	if err := json.NewDecoder(response.Body).Decode(&releases); err != nil {
+	var release release
+	if err := json.NewDecoder(response.Body).Decode(&release); err != nil {
 		return asset{}, err
 	}
-	for _, release := range releases {
-		if !strings.HasPrefix(release.TagName, "plugin-v") {
-			continue
-		}
-		prefix, extension := assetPattern(id, goos, goarch)
-		for _, candidate := range release.Assets {
-			if strings.HasPrefix(candidate.Name, prefix) && strings.HasSuffix(candidate.Name, extension) {
-				return asset{name: candidate.Name, url: candidate.BrowserDownloadURL}, nil
-			}
+	prefix, extension := assetPattern(id, goos, goarch)
+	for _, candidate := range release.Assets {
+		if strings.HasPrefix(candidate.Name, prefix) && strings.HasSuffix(candidate.Name, extension) {
+			return asset{name: candidate.Name, url: candidate.BrowserDownloadURL}, nil
 		}
 	}
-	return asset{}, fmt.Errorf("no published %s package for %s/%s; see the plugin repository for manual installation", id, goos, goarch)
+	return asset{}, fmt.Errorf("no %s %s package for %s/%s in %s", plugin.Name, plugin.Version, goos, goarch, PluginBundleVersion)
 }
 
 func assetPattern(id, goos, goarch string) (string, string) {

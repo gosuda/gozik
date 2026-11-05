@@ -157,7 +157,7 @@ You can also pass files or playlists as arguments:
 
 ## Music Plugins
 
-Choose **Music Provider → Install / Manage Plugins** to download, install, update, and configure the official [Spotify](https://github.com/gosuda/gozik-spotify) and [YouTube Music](https://github.com/gosuda/gozik-yt-music) plugins without leaving Gozik.
+Choose **Music Provider → Install / Manage Plugins** to download, install, update, and configure the official [Spotify](https://github.com/gosuda/gozik-spotify) and [YouTube Music](https://github.com/gosuda/gozik-yt-music) plugins without leaving Gozik. Gozik v0.6 pins Spotify v0.6 and YouTube Music v0.5; plugin packages are built from those exact tags rather than their moving default branches.
 
 The prebuilt packages include their required runtimes, including yt-dlp, Python, and Node.js where applicable. Windows uses UAC for the official installer or service registration. macOS requests administrator access only to copy the app into `/Applications`, then registers a user LaunchAgent; Xcode and developer toolkits are not required.
 

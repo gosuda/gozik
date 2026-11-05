@@ -29,8 +29,10 @@ env:
   PYINSTALLER_VERSION: '6.13.0'
   INNO_SETUP_VERSION: '6.4.2'
   PLUGIN_REPO: 'https://github.com/gosuda/gozik-yt-music.git'
+  PLUGIN_VERSION: 'v0.5'
   PLUGIN_DIR: 'gozik-yt-music'
   SPOTIFY_PLUGIN_REPO: 'https://github.com/gosuda/gozik-spotify.git'
+  SPOTIFY_PLUGIN_VERSION: 'v0.6'
   SPOTIFY_PLUGIN_DIR: 'gozik-spotify'
   BINARY_NAME: 'gozik-yt-music-server'
   DAEMON_DESCRIPTION: 'gozik YouTube Music gRPC plugin server'
@@ -71,7 +73,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd ..
-          git clone --depth 1 "${{ env.PLUGIN_REPO }}" "${{ env.PLUGIN_DIR }}"
+          git clone --depth 1 --branch "${{ env.PLUGIN_VERSION }}" "${{ env.PLUGIN_REPO }}" "${{ env.PLUGIN_DIR }}"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -272,7 +274,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd ..
-          git clone --depth 1 "${{ env.PLUGIN_REPO }}" "${{ env.PLUGIN_DIR }}"
+          git clone --depth 1 --branch "${{ env.PLUGIN_VERSION }}" "${{ env.PLUGIN_REPO }}" "${{ env.PLUGIN_DIR }}"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -475,7 +477,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd ..
-          git clone --depth 1 "${{ env.PLUGIN_REPO }}" "${{ env.PLUGIN_DIR }}"
+          git clone --depth 1 --branch "${{ env.PLUGIN_VERSION }}" "${{ env.PLUGIN_REPO }}" "${{ env.PLUGIN_DIR }}"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -662,7 +664,7 @@ jobs:
           run: |
             set -euo pipefail
             cd /workspace
-            git clone --depth 1 '${{ env.PLUGIN_REPO }}' '${{ env.PLUGIN_DIR }}'
+            git clone --depth 1 --branch '${{ env.PLUGIN_VERSION }}' '${{ env.PLUGIN_REPO }}' '${{ env.PLUGIN_DIR }}'
             PLUGIN_DIR='${{ env.PLUGIN_DIR }}'
             BINARY_NAME='${{ env.BINARY_NAME }}'
             DAEMON_PORT='${{ env.DAEMON_PORT }}'
@@ -847,7 +849,7 @@ jobs:
           run: |
             set -euo pipefail
             cd /workspace
-            git clone --depth 1 '${{ env.PLUGIN_REPO }}' '${{ env.PLUGIN_DIR }}'
+            git clone --depth 1 --branch '${{ env.PLUGIN_VERSION }}' '${{ env.PLUGIN_REPO }}' '${{ env.PLUGIN_DIR }}'
             PLUGIN_DIR='${{ env.PLUGIN_DIR }}'
             BINARY_NAME='${{ env.BINARY_NAME }}'
             DAEMON_PORT='${{ env.DAEMON_PORT }}'
@@ -1039,7 +1041,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.25.6'
+          go-version: '1.26.4'
       - name: Derive version
         id: version
         run: |
@@ -1053,7 +1055,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}"
           cd ..
-          git clone --depth 1 "${{ env.SPOTIFY_PLUGIN_REPO }}" "${{ env.SPOTIFY_PLUGIN_DIR }}"
+          git clone --depth 1 --branch "${{ env.SPOTIFY_PLUGIN_VERSION }}" "${{ env.SPOTIFY_PLUGIN_REPO }}" "${{ env.SPOTIFY_PLUGIN_DIR }}"
       - name: Build spotify plugin bundle
         env:
           GOOS: ${{ matrix.os }}

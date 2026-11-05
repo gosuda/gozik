@@ -64,7 +64,7 @@ func (mw *MainWindow) openPluginManager(parent *gtk.Dialog) {
 }
 
 func (mw *MainWindow) addPluginRow(parent *gtk.Box, dialog *gtk.Dialog, plugin plugininstaller.Plugin, appendLog func(string)) {
-	frame, _ := gtk.FrameNew(plugin.Name)
+	frame, _ := gtk.FrameNew(plugin.Name + " " + plugin.Version)
 	row, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 6)
 	row.SetMarginTop(8)
 	row.SetMarginBottom(8)
