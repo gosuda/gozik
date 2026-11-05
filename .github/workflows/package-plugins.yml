@@ -795,18 +795,12 @@ jobs:
             exec "${BUNDLE_DST}/${BINARY_NAME}" "$@"
             APPRUN_HEREDOC
             chmod +x "${APPDIR}/AppRun"
-            APPIMAGETOOL='appimagetool-aarch64.AppImage'
-            curl -fsSL -o "$APPIMAGETOOL" \
-              'https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage'
-            chmod +x "$APPIMAGETOOL"
-            "./${APPIMAGETOOL}" --appimage-extract
-            mv squashfs-root appimagetool-arm64-extracted
+            curl -fsSL -o runtime-aarch64 \
+              'https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-aarch64'
+            mksquashfs "${APPDIR}" gozik-arm64.squashfs -root-owned -noappend -comp zstd
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-arm64-${VERSION}.AppImage"
-            ARCH=aarch64 ./appimagetool-arm64-extracted/AppRun \
-              --comp zstd \
-              "${APPDIR}" \
-              "${APPIMAGE_OUT}"
+            cat runtime-aarch64 gozik-arm64.squashfs > "${APPIMAGE_OUT}"
             chmod +x "${APPIMAGE_OUT}"
             ls -lh dist-appimage/
             sha256sum "${APPIMAGE_OUT}"
