@@ -101,8 +101,8 @@ func createStartMenuShortcut(ctx *InstallContext) error {
 	if err := os.MkdirAll(startMenu, 0755); err != nil {
 		return err
 	}
-	icon := filepath.Join(ctx.InstallDir, "assets", "icons", "hicolor", "256x256", "apps", "gozik.png")
-	return createShortcut(filepath.Join(startMenu, "Gozik.lnk"), filepath.Join(ctx.InstallDir, "gozik.exe"), "", icon)
+	icon := filepath.Join(ctx.InstallDir, "gozik.exe")
+	return createShortcut(filepath.Join(startMenu, "Gozik.lnk"), icon, "", icon)
 }
 
 func createDesktopShortcut(ctx *InstallContext) error {
@@ -110,8 +110,8 @@ func createDesktopShortcut(ctx *InstallContext) error {
 	if err != nil {
 		return err
 	}
-	icon := filepath.Join(ctx.InstallDir, "assets", "icons", "hicolor", "256x256", "apps", "gozik.png")
-	return createShortcut(filepath.Join(desktop, "Gozik.lnk"), filepath.Join(ctx.InstallDir, "gozik.exe"), "", icon)
+	icon := filepath.Join(ctx.InstallDir, "gozik.exe")
+	return createShortcut(filepath.Join(desktop, "Gozik.lnk"), icon, "", icon)
 }
 
 func createShortcut(lnkPath, target, args, icon string) error {

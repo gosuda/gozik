@@ -9,8 +9,8 @@ set -euo pipefail
 #
 # Expected inputs (produced by the release workflow):
 #   gozik-amd64.AppImage
-#   gozik-linux-arm64
-#   gozik-linux-riscv64
+#   gozik-arm64.AppImage
+#   gozik-riscv64.AppImage
 #   gozik-windows-amd64.zip
 #   gozik-windows-arm64.zip
 #   gozik-macos-arm64.dmg
@@ -21,7 +21,7 @@ set -euo pipefail
 #   gozik-payload-linux-riscv64.tar.gz
 #   gozik-payload-windows-amd64.tar.gz
 #   gozik-payload-windows-arm64.tar.gz
-#   gozik-payload-darwin-arm64.tar.gz
+#   gozik-payload-macos-arm64.tar.gz
 # ---------------------------------------------------------------------------
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -42,45 +42,22 @@ cd "$PROJECT_ROOT"
 workdir="$(mktemp -d)"
 trap 'rm -rf "$workdir"' EXIT
 
-package_linux_amd64() {
-  local appimage="$INPUT_DIR/gozik-amd64.AppImage"
+package_linux() {
+  local arch="$1"
+  local appimage="$INPUT_DIR/gozik-${arch}.AppImage"
   if [[ ! -f "$appimage" ]]; then
-    echo "Skipping linux/amd64 payload: gozik-amd64.AppImage not found"
+    echo "Skipping linux/${arch} payload: gozik-${arch}.AppImage not found"
     return 0
   fi
-  local stage="$workdir/linux-amd64"
+  local stage="$workdir/linux-${arch}"
   mkdir -p "$stage"
-  cp -L "$appimage" "$stage/gozik-amd64.AppImage"
-  chmod +x "$stage/gozik-amd64.AppImage"
+  cp -L "$appimage" "$stage/gozik-${arch}.AppImage"
+  chmod +x "$stage/gozik-${arch}.AppImage"
   # Include a loose icon so the installer can install it without having to
   # extract the AppImage (which may fail when FUSE is unavailable).
   if [[ -f "$PROJECT_ROOT/gozik.png" ]]; then
     cp "$PROJECT_ROOT/gozik.png" "$stage/gozik.png"
   fi
-  tar -czf "$OUTPUT_DIR/gozik-payload-linux-amd64.tar.gz" -C "$stage" .
-  echo "Created gozik-payload-linux-amd64.tar.gz"
-}
-
-package_linux_raw() {
-  local arch="$1"
-  local binary="$INPUT_DIR/gozik-linux-${arch}"
-  if [[ ! -f "$binary" ]]; then
-    echo "Skipping linux/${arch} payload: gozik-linux-${arch} not found"
-    return 0
-  fi
-  local stage="$workdir/linux-${arch}"
-  mkdir -p "$stage"
-  cp "$binary" "$stage/gozik"
-  chmod +x "$stage/gozik"
-
-  if [[ -d "$PROJECT_ROOT/assets" ]]; then
-    cp -R "$PROJECT_ROOT/assets" "$stage/assets"
-  fi
-  if [[ -f "$PROJECT_ROOT/gozik.png" ]]; then
-    mkdir -p "$stage/assets/icons/hicolor/256x256/apps"
-    cp "$PROJECT_ROOT/gozik.png" "$stage/assets/icons/hicolor/256x256/apps/gozik.png"
-  fi
-
   tar -czf "$OUTPUT_DIR/gozik-payload-linux-${arch}.tar.gz" -C "$stage" .
   echo "Created gozik-payload-linux-${arch}.tar.gz"
 }
@@ -139,13 +116,13 @@ package_darwin() {
   # Restore the original trap.
   trap 'rm -rf "$workdir"' EXIT
 
-  tar -czf "$OUTPUT_DIR/gozik-payload-darwin-arm64.tar.gz" -C "$stage" .
-  echo "Created gozik-payload-darwin-arm64.tar.gz"
+  tar -czf "$OUTPUT_DIR/gozik-payload-macos-arm64.tar.gz" -C "$stage" .
+  echo "Created gozik-payload-macos-arm64.tar.gz"
 }
 
-package_linux_amd64
-package_linux_raw arm64
-package_linux_raw riscv64
+package_linux amd64
+package_linux arm64
+package_linux riscv64
 package_windows amd64
 package_windows arm64
 package_darwin

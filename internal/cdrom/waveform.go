@@ -12,13 +12,6 @@ import (
 // builds a 200-point RMS waveform. It opens its own device handle so it can
 // run independently of the active playback streamer.
 func WaveformForTrack(device string, track Track) (*models.Waveform, error) {
-	if !track.IsAudio {
-		return nil, errors.New("cannot generate waveform for data track")
-	}
-	if track.StartLBA >= track.EndLBA {
-		return nil, errors.New("invalid track boundaries")
-	}
-
 	dev, err := Open(device)
 	if err != nil {
 		return nil, err

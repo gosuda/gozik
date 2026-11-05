@@ -127,3 +127,27 @@ func TestPrescan(t *testing.T) {
 	}
 	t.Logf("Waveform data length: %d", len(wf.Data))
 }
+
+func TestPrescanVeryShortAudio(t *testing.T) {
+	if _, err := exec.LookPath("ffmpeg"); err != nil {
+		t.Skip("ffmpeg not installed")
+	}
+
+	path := filepath.Join(t.TempDir(), "short.wav")
+	cmd := exec.Command(
+		"ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+		"-f", "lavfi", "-i", "sine=frequency=440:duration=0.001:sample_rate=8000",
+		"-c:a", "pcm_s16le", path,
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("could not generate short WAV fixture: %v: %s", err, out)
+	}
+
+	wf, _, err := Prescan(path, nil)
+	if err != nil {
+		t.Fatalf("Prescan() error = %v", err)
+	}
+	if wf == nil {
+		t.Fatal("Prescan() returned nil waveform")
+	}
+}

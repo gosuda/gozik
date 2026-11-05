@@ -145,18 +145,25 @@ jobs:
           cp gozik.exe "${{ matrix.output }}/"
           ./installer/scripts/collect-windows-dlls.sh "${{ matrix.mingw-prefix }}" "${{ matrix.output }}"
 
-      - name: Build Windows ${{ matrix.arch }} payload
-        shell: powershell
+      - name: Build Windows ${{ matrix.arch }} standalone executable and payload
+        shell: msys2 {0}
         run: |
-          New-Item -ItemType Directory -Path "${{ matrix.output }}" -Force | Out-Null
-          Copy-Item "ffmpeg.exe" "${{ matrix.output }}\"
-          Copy-Item -Recurse "assets" "${{ matrix.output }}\"
-          tar -czf "gozik-payload-windows-${{ matrix.arch }}.tar.gz" -C "${{ matrix.output }}" .
+          cp ffmpeg.exe "${{ matrix.output }}/"
+          cp -R assets "${{ matrix.output }}/"
+          ./installer/scripts/build-windows-standalone.sh "${{ matrix.output }}" "gozik-windows-${{ matrix.arch }}.exe"
+          mkdir -p standalone-payload
+          cp "gozik-windows-${{ matrix.arch }}.exe" standalone-payload/gozik.exe
+          tar -czf "gozik-payload-windows-${{ matrix.arch }}.tar.gz" -C standalone-payload .
 
       - uses: actions/upload-artifact@v4
         with:
           name: gozik-payload-windows-${{ matrix.arch }}
           path: gozik-payload-windows-${{ matrix.arch }}.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gozik-standalone-windows-${{ matrix.arch }}
+          path: gozik-windows-${{ matrix.arch }}.exe
 
   build-macos-payload:
     runs-on: macos-latest
@@ -200,6 +207,20 @@ jobs:
           DIR="$(cd "$(dirname "$0")" && pwd)"
           export GOZIK_ASSETS="$DIR/assets"
           export PATH="$DIR:$PATH"
+          export DYLD_FALLBACK_LIBRARY_PATH="$DIR/../Frameworks:${DYLD_FALLBACK_LIBRARY_PATH:-}"
+          PIXBUF_ROOT="$DIR/../Resources/lib/gdk-pixbuf-2.0"
+          if [ -d "$PIXBUF_ROOT" ]; then
+            PIXBUF_VERSION="$(find "$PIXBUF_ROOT" -maxdepth 1 -type d -name '2.*' | head -n1)"
+            if [ -n "$PIXBUF_VERSION" ]; then
+              export GDK_PIXBUF_MODULEDIR="$PIXBUF_VERSION/loaders"
+              CACHE="$PIXBUF_VERSION/loaders.cache"
+              if [ -f "$CACHE" ]; then
+                ABS_CACHE="$(mktemp "${TMPDIR:-/tmp}/gozik-loaders.XXXXXX")"
+                sed "s|\"loaders/|\"$GDK_PIXBUF_MODULEDIR/|g" "$CACHE" > "$ABS_CACHE"
+                export GDK_PIXBUF_MODULE_FILE="$ABS_CACHE"
+              fi
+            fi
+          fi
           exec "$DIR/gozik" "$@"
           EOF
           chmod +x "$APP/Contents/MacOS/gozik-launcher.sh"
@@ -244,6 +265,9 @@ jobs:
                 RES_DIR="$APP/Contents/Resources/lib/gdk-pixbuf-2.0/$(basename "$VERSION_DIR")"
                 mkdir -p "${RES_DIR}/loaders"
                 cp -L "${VERSION_DIR}/loaders/"*.so "${RES_DIR}/loaders/"
+                for loader in "${RES_DIR}/loaders/"*.so; do
+                  dylibbundler -od -b -x "$loader" -d "$APP/Contents/Frameworks/"
+                done
                 gdk-pixbuf-query-loaders "${RES_DIR}/loaders/"*.so > "${RES_DIR}/loaders.cache"
                 sed -i "" "s|\"${RES_DIR}/|\"|g; s|\"${VERSION_DIR}/loaders/|\"|g" "${RES_DIR}/loaders.cache"
                 break
@@ -307,27 +331,17 @@ jobs:
           deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ubuntu-ports/ ${CODENAME}-security main restricted universe multiverse
           EOF
           sudo apt-get update
-          sudo apt-get install -y gcc-${{ matrix.cc-target }} libgtk-3-dev:${{ matrix.arch }} libopusfile-dev:${{ matrix.arch }} libasound2-dev:${{ matrix.arch }}
+          sudo apt-get install -y gcc-${{ matrix.cc-target }} libgtk-3-dev:${{ matrix.arch }} libopusfile-dev:${{ matrix.arch }} libasound2-dev:${{ matrix.arch }} squashfs-tools binutils-multiarch
 
-      - name: Build gozik
+      - name: Build Linux ${{ matrix.arch }} AppImage payload
         env:
-          CGO_ENABLED: 1
-          GOOS: linux
-          GOARCH: ${{ matrix.arch }}
-          CC: ${{ matrix.cc }}
           PKG_CONFIG_LIBDIR: /usr/lib/${{ matrix.cc-target }}/pkgconfig:/usr/share/pkgconfig
         run: |
-          go build -ldflags="-s -w" -o ${{ matrix.output }} ./cmd/gozik
-
-      - name: Build Linux ${{ matrix.arch }} payload
-        run: |
-          mkdir -p "payload/gozik"
-          cp "${{ matrix.output }}" payload/gozik/gozik
-          chmod +x payload/gozik/gozik
-          cp -R assets payload/gozik/assets
-          mkdir -p payload/gozik/assets/icons/hicolor/256x256/apps
-          cp gozik.png payload/gozik/assets/icons/hicolor/256x256/apps/gozik.png
-          tar -czf "gozik-payload-linux-${{ matrix.arch }}.tar.gz" -C payload/gozik .
+          ./build_appimage.sh "${{ matrix.arch }}"
+          mkdir -p payload
+          cp "dist/gozik-${{ matrix.arch }}.AppImage" payload/
+          cp gozik.png payload/gozik.png
+          tar -czf "gozik-payload-linux-${{ matrix.arch }}.tar.gz" -C payload .
 
       - uses: actions/upload-artifact@v4
         with:

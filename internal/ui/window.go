@@ -595,13 +595,8 @@ func (mw *MainWindow) showErrorDialog(msg string) {
 }
 
 func (mw *MainWindow) updateProviderButtonVisibility() {
-	if mw.btnOpenProvider == nil {
-		return
-	}
-	if mw.providerCount > 0 {
+	if mw.btnOpenProvider != nil {
 		mw.btnOpenProvider.Show()
-	} else {
-		mw.btnOpenProvider.Hide()
 	}
 }
 
@@ -1464,6 +1459,9 @@ func (mw *MainWindow) playProviderTrack(idx int, gen uint64) {
 				return false
 			}
 			mw.player.SetDuration(time.Duration(song.Duration) * time.Second)
+		}
+		if mw.waveformOverlay != nil {
+			mw.waveformOverlay.SetWaveform(song.Waveform)
 		}
 		if song.Waveform == nil {
 			if mw.prescanBridge != nil {

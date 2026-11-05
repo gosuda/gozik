@@ -84,7 +84,7 @@ Artifacts are written to `dist/`:
 - `dist/gozik-arm64.AppImage`
 - `dist/gozik-riscv64.AppImage`
 
-> **Note:** `riscv64` requires Debian ports multiarch setup (`dpkg --add-architecture riscv64`). The script attempts to configure this automatically; if it fails, add the ports repository manually.
+> **Note:** `riscv64` requires Debian ports multiarch setup (`dpkg --add-architecture riscv64`). The script attempts to configure this automatically; if it fails, add the ports repository manually. Cross-built AppImages always use an FFmpeg binary matching their target architecture.
 
 ## Installer
 
@@ -104,6 +104,10 @@ Binaries are written to `installer/dist/`:
 - `gozik-installer-macos-arm64`
 - `gozik-installer-windows-amd64.exe`
 - `gozik-installer-windows-arm64.exe`
+
+### Windows standalone
+
+The release also provides `gozik-windows-amd64.exe` and `gozik-windows-arm64.exe`. Each file contains Gozik, GTK, FFmpeg, image loaders, and UI assets, so no separate runtime installation is required. On first launch, the executable unpacks its runtime into the current user's cache and starts Gozik.
 
 ### GUI mode
 
@@ -150,6 +154,14 @@ You can also pass files or playlists as arguments:
 - **Volume knob**: Adjust playback volume
 - **Right-click on a track**: Remove it from the playlist
 - **Theme toggle**: Cycle light / dark / system theme
+
+## Music Plugins
+
+Choose **Music Provider → Install / Manage Plugins** to download, install, update, and configure the official [Spotify](https://github.com/gosuda/gozik-spotify) and [YouTube Music](https://github.com/gosuda/gozik-yt-music) plugins without leaving Gozik.
+
+The prebuilt packages include their required runtimes, including yt-dlp, Python, and Node.js where applicable. Windows uses UAC for the official installer or service registration. macOS requests administrator access only to copy the app into `/Applications`, then registers a user LaunchAgent; Xcode and developer toolkits are not required.
+
+Spotify configuration requires a Client ID from the Spotify Developer Dashboard with `http://127.0.0.1:43827/callback` registered as a redirect URI. YouTube Music supports OAuth device login and browser-cookie login.
 
 ## Online Metadata & Lyrics
 

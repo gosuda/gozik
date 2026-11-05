@@ -104,8 +104,11 @@ func (mw *MainWindow) OpenProviderDialog() {
 		providerCombo.SetActive(0)
 	}
 	mw.themeComboPopup(providerCombo)
+	manageBtn, _ := gtk.ButtonNewWithLabel("Install / Manage Plugins")
+	manageBtn.Connect("clicked", func() { mw.openPluginManager(dialog) })
 	providerRow.PackStart(providerLbl, false, false, 0)
 	providerRow.PackStart(providerCombo, true, true, 0)
+	providerRow.PackEnd(manageBtn, false, false, 0)
 	box.PackStart(providerRow, false, false, 0)
 
 	// Auth status / action row

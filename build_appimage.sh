@@ -115,10 +115,10 @@ if [ "$ARCH" = "riscv64" ]; then
     done
   fi
 else
-  # Prefer distro ffmpeg when available. It avoids relying on external
-  # static-build mirrors during release CI, and its shared libs are bundled
-  # below through readelf dependency scanning.
-  if command -v ffmpeg >/dev/null 2>&1; then
+  # A host ffmpeg cannot run in a cross-compiled AppImage. Use the distro
+  # binary only for native builds and an architecture-matched static build
+  # otherwise.
+  if [ "$DEB_ARCH" = "$(dpkg --print-architecture)" ] && command -v ffmpeg >/dev/null 2>&1; then
     cp -L "$(command -v ffmpeg)" "${APPDIR}/usr/bin/ffmpeg"
   else
     FFMPEG_TAR="${BUILD_DIR}/ffmpeg-${FFMPEG_ARCH}-static.tar.xz"

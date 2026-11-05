@@ -74,21 +74,22 @@ func Prescan(path string, headers map[string]string) (*models.Waveform, []models
 		}
 	}
 
-	_ = cmd.Wait()
-
-	totalSamples := len(samples)
-	if totalSamples < 200 {
-		return nil, nil, fmt.Errorf("too few samples: %d", totalSamples)
+	if err := cmd.Wait(); err != nil {
+		return nil, nil, fmt.Errorf("ffmpeg prescan: %w", err)
 	}
 
-	windowSize := totalSamples / 200
+	totalSamples := len(samples)
+	if totalSamples == 0 {
+		return nil, nil, fmt.Errorf("no audio samples decoded")
+	}
+
 	var w models.Waveform
 
-	for i := 0; i < 200; i++ {
-		start := i * windowSize
-		end := start + windowSize
-		if i == 199 {
-			end = totalSamples
+	for i := 0; i < len(w.Data); i++ {
+		start := i * totalSamples / len(w.Data)
+		end := (i + 1) * totalSamples / len(w.Data)
+		if end <= start {
+			end = start + 1
 		}
 
 		var sumSquares float64
