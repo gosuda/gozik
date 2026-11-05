@@ -974,7 +974,7 @@ jobs:
             APPRUN_HEREDOC
             chmod +x "${APPDIR}/AppRun"
             curl -fsSL -o runtime-riscv64 \
-              'https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-riscv64'
+              'https://github.com/redpanda-cpp/appimage-riscv64/releases/download/20230808.0/runtime-riscv64'
             mksquashfs "${APPDIR}" gozik-riscv64.squashfs -root-owned -noappend -comp zstd
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-riscv64-${VERSION}.AppImage"

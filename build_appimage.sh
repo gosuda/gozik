@@ -324,8 +324,12 @@ mksquashfs "$APPDIR" "$SQUASHFS" -root-owned -noappend -comp xz
 echo "[8/8] Attaching AppImage runtime..."
 RUNTIME_FILE="${BUILD_DIR}/runtime-${RUNTIME_ARCH}"
 if [ ! -f "$RUNTIME_FILE" ]; then
-  curl -sL -o "$RUNTIME_FILE" \
-    "https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-${RUNTIME_ARCH}"
+  if [ "$ARCH" = "riscv64" ]; then
+    RUNTIME_URL="https://github.com/redpanda-cpp/appimage-riscv64/releases/download/20230808.0/runtime-riscv64"
+  else
+    RUNTIME_URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-${RUNTIME_ARCH}"
+  fi
+  curl -fL -o "$RUNTIME_FILE" "$RUNTIME_URL"
 fi
 
 APPIMAGE_NAME="gozik-${ARCH}.AppImage"
