@@ -88,9 +88,15 @@ jobs:
       - name: Install Python dependencies
         shell: powershell
         run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          $buildConstraint = @()
+          if ("${{ matrix.arch }}" -eq "arm64") {
+            $buildConstraint = @("--build-constraint", "$env:RUNNER_TEMP\gozik-pip-constraints.txt")
+          }
           & "$env:pythonLocation\python.exe" -m pip install --upgrade pip
-          & "$env:pythonLocation\python.exe" -m pip install -r "..\${{ env.PLUGIN_DIR }}\requirements.txt"
-          & "$env:pythonLocation\python.exe" -m pip install "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
+          & "$env:pythonLocation\python.exe" -m pip install @buildConstraint -r "..\${{ env.PLUGIN_DIR }}\requirements.txt"
+          & "$env:pythonLocation\python.exe" -m pip install @buildConstraint "pyinstaller==${{ env.PYINSTALLER_VERSION }}"
       - name: Generate protobuf stubs
         shell: bash
         run: |
