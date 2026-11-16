@@ -6,7 +6,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 INSTALLER_DIR="${PROJECT_ROOT}/installer"
 OUTPUT_DIR="${1:-${INSTALLER_DIR}/dist}"
-DEFAULT_VERSION="${2:-${INSTALLER_DEFAULT_VERSION:-v0.7}}"
+DEFAULT_VERSION="${2:-${INSTALLER_DEFAULT_VERSION:-v0.8}}"
 
 mkdir -p "$OUTPUT_DIR"
 
