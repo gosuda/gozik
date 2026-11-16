@@ -78,6 +78,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.python-arch }}
+      - name: Constrain setuptools for Windows ARM64
+        if: matrix.arch == 'arm64'
+        shell: powershell
+        run: |
+          $constraints = "$env:RUNNER_TEMP\gozik-pip-constraints.txt"
+          Set-Content -Path $constraints -Value "setuptools<84"
+          "PIP_CONSTRAINT=$constraints" >> $env:GITHUB_ENV
       - name: Install Python dependencies
         shell: powershell
         run: |
@@ -154,7 +161,16 @@ jobs:
           $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
           $nssmZip = "nssm.zip"
           $nssmDir = "nssm-extracted"
-          Invoke-WebRequest -Uri $nssmUrl -OutFile $nssmZip -UseBasicParsing
+          $downloaded = $false
+          for ($attempt = 1; $attempt -le 4 -and -not $downloaded; $attempt++) {
+            try {
+              Invoke-WebRequest -Uri $nssmUrl -OutFile $nssmZip -UseBasicParsing
+              $downloaded = $true
+            } catch {
+              if ($attempt -eq 4) { throw }
+              Start-Sleep -Seconds (5 * $attempt)
+            }
+          }
           Expand-Archive -Path $nssmZip -DestinationPath $nssmDir -Force
           $nssmBin = "win64"
           New-Item -ItemType Directory -Path "..\${{ env.PLUGIN_DIR }}\dist\${{ env.BINARY_NAME }}" -Force | Out-Null
