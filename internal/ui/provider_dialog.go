@@ -648,6 +648,7 @@ func (mw *MainWindow) promptSpotifyClientID(parent *gtk.Dialog) (string, bool) {
 	entry, _ := gtk.EntryNew()
 	entry.SetPlaceholderText("Spotify Client ID")
 	entry.SetVisibility(true)
+	entry.SetActivatesDefault(true)
 	box.PackStart(entry, false, false, 0)
 
 	content.PackStart(box, true, true, 0)
