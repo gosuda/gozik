@@ -648,7 +648,7 @@ func (mw *MainWindow) promptSpotifyClientID(parent *gtk.Dialog) (string, bool) {
 	entry, _ := gtk.EntryNew()
 	entry.SetPlaceholderText("Spotify Client ID")
 	entry.SetVisibility(true)
-	entry.SetActivatesDefault(true)
+	connectSpotifyClientIDEntry(dlg, entry)
 	box.PackStart(entry, false, false, 0)
 
 	content.PackStart(box, true, true, 0)
@@ -666,4 +666,10 @@ func (mw *MainWindow) promptSpotifyClientID(parent *gtk.Dialog) (string, bool) {
 			return clientID, true
 		}
 	}
+}
+
+func connectSpotifyClientIDEntry(dlg *gtk.Dialog, entry *gtk.Entry) {
+	entry.Connect("activate", func() {
+		dlg.Response(gtk.RESPONSE_OK)
+	})
 }
