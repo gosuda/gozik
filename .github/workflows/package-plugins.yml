@@ -29,10 +29,10 @@ env:
   PYINSTALLER_VERSION: '6.13.0'
   INNO_SETUP_VERSION: '6.4.2'
   PLUGIN_REPO: 'https://github.com/gosuda/gozik-yt-music.git'
-  PLUGIN_VERSION: 'v0.5'
+  PLUGIN_VERSION: 'v0.7'
   PLUGIN_DIR: 'gozik-yt-music'
   SPOTIFY_PLUGIN_REPO: 'https://github.com/gosuda/gozik-spotify.git'
-  SPOTIFY_PLUGIN_VERSION: 'v0.6'
+  SPOTIFY_PLUGIN_VERSION: 'v0.7'
   SPOTIFY_PLUGIN_DIR: 'gozik-spotify'
   BINARY_NAME: 'gozik-yt-music-server'
   DAEMON_DESCRIPTION: 'gozik YouTube Music gRPC plugin server'
@@ -551,49 +551,7 @@ jobs:
           [Install]
           WantedBy=default.target
           UNIT_EOF
-          cat > "${APPDIR}/AppRun" <<'APPRUN_EOF'
-          #!/bin/bash
-          set -euo pipefail
-          HERE="$(dirname "$(readlink -f "${0}")")"
-          BINARY_NAME='gozik-yt-music-server'
-          INSTALL_DIR='${HOME}/.local/share/gozik/ytmusic'
-          SYSTEMD_USER_DIR='${HOME}/.config/systemd/user'
-          UNIT_NAME='gozik-ytmusic.service'
-          UNIT_SRC="${HERE}/usr/lib/systemd/user/${UNIT_NAME}"
-          UNIT_DST="${SYSTEMD_USER_DIR}/${UNIT_NAME}"
-          BUNDLE_SRC="${HERE}/usr/bin/${BINARY_NAME}"
-          BUNDLE_DST="${INSTALL_DIR}/${BINARY_NAME}"
-          mkdir -p "${INSTALL_DIR}" "${SYSTEMD_USER_DIR}"
-          if [[ ! -d "${BUNDLE_DST}" ]] || ! diff -rq "${BUNDLE_SRC}" "${BUNDLE_DST}" >/dev/null 2>&1; then
-            echo "[gozik-ytmusic] Installing bundle to ${BUNDLE_DST}"
-            rm -rf "${BUNDLE_DST}"
-            cp -a "${BUNDLE_SRC}" "${BUNDLE_DST}"
-            chmod -R +x "${BUNDLE_DST}"
-          fi
-          if [[ ! -f "${UNIT_DST}" ]] || ! cmp -s "${UNIT_SRC}" "${UNIT_DST}"; then
-            echo "[gozik-ytmusic] Installing systemd unit to ${UNIT_DST}"
-            sed "s|%h/.local/share/gozik/ytmusic/${BINARY_NAME}/${BINARY_NAME}|${BUNDLE_DST}/${BINARY_NAME}|g" \
-              "${UNIT_SRC}" > "${UNIT_DST}"
-            if command -v systemctl &>/dev/null && \
-               systemctl --user is-system-running &>/dev/null 2>&1; then
-              systemctl --user daemon-reload
-              systemctl --user enable "${UNIT_NAME}"
-              systemctl --user restart "${UNIT_NAME}" || \
-                systemctl --user start "${UNIT_NAME}"
-              echo '[gozik-ytmusic] Daemon registered and started via systemd.'
-            else
-              echo '[gozik-ytmusic] systemd not available; starting server directly.'
-              exec "${BUNDLE_DST}/${BINARY_NAME}" "$@"
-            fi
-            exit 0
-          fi
-          if command -v systemctl &>/dev/null && \
-             systemctl --user is-active "${UNIT_NAME}" &>/dev/null; then
-            echo '[gozik-ytmusic] Daemon already running via systemd.'
-            exit 0
-          fi
-          exec "${BUNDLE_DST}/${BINARY_NAME}" "$@"
-          APPRUN_EOF
+          cp "${{ env.PLUGIN_DIR }}/packaging/linux/AppRun" "${APPDIR}/AppRun"
           chmod +x "${APPDIR}/AppRun"
           find "${APPDIR}" -type f | sort
       - name: Download appimagetool (AMD64)
@@ -754,46 +712,7 @@ jobs:
             [Install]
             WantedBy=default.target
             UNIT_EOF
-            cat > "${APPDIR}/AppRun" <<'APPRUN_HEREDOC'
-            #!/bin/bash
-            set -euo pipefail
-            HERE="$(dirname "$(readlink -f "${0}")")"
-            BINARY_NAME='gozik-yt-music-server'
-            INSTALL_DIR='${HOME}/.local/share/gozik/ytmusic'
-            SYSTEMD_USER_DIR='${HOME}/.config/systemd/user'
-            UNIT_NAME='gozik-ytmusic.service'
-            UNIT_SRC="${HERE}/usr/lib/systemd/user/${UNIT_NAME}"
-            UNIT_DST="${SYSTEMD_USER_DIR}/${UNIT_NAME}"
-            BUNDLE_SRC="${HERE}/usr/bin/${BINARY_NAME}"
-            BUNDLE_DST="${INSTALL_DIR}/${BINARY_NAME}"
-            mkdir -p "${INSTALL_DIR}" "${SYSTEMD_USER_DIR}"
-            if [[ ! -d "${BUNDLE_DST}" ]] || ! diff -rq "${BUNDLE_SRC}" "${BUNDLE_DST}" >/dev/null 2>&1; then
-              echo "[gozik-ytmusic] Installing bundle to ${BUNDLE_DST}"
-              rm -rf "${BUNDLE_DST}"
-              cp -a "${BUNDLE_SRC}" "${BUNDLE_DST}"
-              chmod -R +x "${BUNDLE_DST}"
-            fi
-            if [[ ! -f "${UNIT_DST}" ]] || ! cmp -s "${UNIT_SRC}" "${UNIT_DST}"; then
-              sed "s|%h/.local/share/gozik/ytmusic/${BINARY_NAME}/${BINARY_NAME}|${BUNDLE_DST}/${BINARY_NAME}|g" \
-                "${UNIT_SRC}" > "${UNIT_DST}"
-              if command -v systemctl &>/dev/null && \
-                 systemctl --user is-system-running &>/dev/null 2>&1; then
-                systemctl --user daemon-reload
-                systemctl --user enable "${UNIT_NAME}"
-                systemctl --user restart "${UNIT_NAME}" || systemctl --user start "${UNIT_NAME}"
-                echo '[gozik-ytmusic] Daemon registered and started via systemd.'
-              else
-                exec "${BUNDLE_DST}/${BINARY_NAME}" "$@"
-              fi
-              exit 0
-            fi
-            if command -v systemctl &>/dev/null && \
-               systemctl --user is-active "${UNIT_NAME}" &>/dev/null; then
-              echo '[gozik-ytmusic] Daemon already running via systemd.'
-              exit 0
-            fi
-            exec "${BUNDLE_DST}/${BINARY_NAME}" "$@"
-            APPRUN_HEREDOC
+            cp "${PLUGIN_DIR}/packaging/linux/AppRun" "${APPDIR}/AppRun"
             chmod +x "${APPDIR}/AppRun"
             curl -fsSL -o runtime-aarch64 \
               'https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-aarch64'
@@ -932,46 +851,7 @@ jobs:
             [Install]
             WantedBy=default.target
             UNIT_EOF
-            cat > "${APPDIR}/AppRun" <<'APPRUN_HEREDOC'
-            #!/bin/bash
-            set -euo pipefail
-            HERE="$(dirname "$(readlink -f "${0}")")"
-            BINARY_NAME='gozik-yt-music-server'
-            INSTALL_DIR='${HOME}/.local/share/gozik/ytmusic'
-            SYSTEMD_USER_DIR='${HOME}/.config/systemd/user'
-            UNIT_NAME='gozik-ytmusic.service'
-            UNIT_SRC="${HERE}/usr/lib/systemd/user/${UNIT_NAME}"
-            UNIT_DST="${SYSTEMD_USER_DIR}/${UNIT_NAME}"
-            BUNDLE_SRC="${HERE}/usr/bin/${BINARY_NAME}"
-            BUNDLE_DST="${INSTALL_DIR}/${BINARY_NAME}"
-            mkdir -p "${INSTALL_DIR}" "${SYSTEMD_USER_DIR}"
-            if [[ ! -d "${BUNDLE_DST}" ]] || ! diff -rq "${BUNDLE_SRC}" "${BUNDLE_DST}" >/dev/null 2>&1; then
-              echo "[gozik-ytmusic] Installing bundle to ${BUNDLE_DST}"
-              rm -rf "${BUNDLE_DST}"
-              cp -a "${BUNDLE_SRC}" "${BUNDLE_DST}"
-              chmod -R +x "${BUNDLE_DST}"
-            fi
-            if [[ ! -f "${UNIT_DST}" ]] || ! cmp -s "${UNIT_SRC}" "${UNIT_DST}"; then
-              sed "s|%h/.local/share/gozik/ytmusic/${BINARY_NAME}/${BINARY_NAME}|${BUNDLE_DST}/${BINARY_NAME}|g" \
-                "${UNIT_SRC}" > "${UNIT_DST}"
-              if command -v systemctl &>/dev/null && \
-                 systemctl --user is-system-running &>/dev/null 2>&1; then
-                systemctl --user daemon-reload
-                systemctl --user enable "${UNIT_NAME}"
-                systemctl --user restart "${UNIT_NAME}" || systemctl --user start "${UNIT_NAME}"
-                echo '[gozik-ytmusic] Daemon registered and started via systemd.'
-              else
-                exec "${BUNDLE_DST}/${BINARY_NAME}" "$@"
-              fi
-              exit 0
-            fi
-            if command -v systemctl &>/dev/null && \
-               systemctl --user is-active "${UNIT_NAME}" &>/dev/null; then
-              echo '[gozik-ytmusic] Daemon already running via systemd.'
-              exit 0
-            fi
-            exec "${BUNDLE_DST}/${BINARY_NAME}" "$@"
-            APPRUN_HEREDOC
+            cp "${PLUGIN_DIR}/packaging/linux/AppRun" "${APPDIR}/AppRun"
             chmod +x "${APPDIR}/AppRun"
             curl -fsSL -o runtime-riscv64 \
               'https://github.com/redpanda-cpp/appimage-riscv64/releases/download/20230808.0/runtime-riscv64'

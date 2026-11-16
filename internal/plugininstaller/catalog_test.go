@@ -20,12 +20,12 @@ func TestAssetPattern(t *testing.T) {
 }
 
 func TestPinnedPluginVersions(t *testing.T) {
-	if PluginBundleVersion != "plugin-v0.6" {
+	if PluginBundleVersion != "plugin-v0.7" {
 		t.Fatalf("PluginBundleVersion = %q", PluginBundleVersion)
 	}
 	spotify, _ := Lookup("spotify")
 	ytmusic, _ := Lookup("ytmusic")
-	if spotify.Version != "v0.6" || ytmusic.Version != "v0.5" {
+	if spotify.Version != "v0.7" || ytmusic.Version != "v0.7" {
 		t.Fatalf("unexpected plugin versions: Spotify %s, YouTube Music %s", spotify.Version, ytmusic.Version)
 	}
 }

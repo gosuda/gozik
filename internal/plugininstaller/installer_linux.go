@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func install(ctx context.Context, id string, progress Progress) error {
@@ -41,9 +42,23 @@ func install(ctx context.Context, id string, progress Progress) error {
 
 func run(ctx context.Context, progress Progress, name string, args ...string) error {
 	command := exec.CommandContext(ctx, name, args...)
+	command.Env = hostEnvironment()
 	output, err := command.CombinedOutput()
 	if len(output) > 0 {
 		progress(string(output))
 	}
 	return err
+}
+
+func hostEnvironment() []string {
+	environment := os.Environ()
+	filtered := make([]string, 0, len(environment))
+	for _, variable := range environment {
+		name, _, _ := strings.Cut(variable, "=")
+		if name == "LD_LIBRARY_PATH" || name == "LD_PRELOAD" {
+			continue
+		}
+		filtered = append(filtered, variable)
+	}
+	return filtered
 }

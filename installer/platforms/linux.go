@@ -4,6 +4,7 @@
 package platforms
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -112,11 +113,23 @@ func installIcons(ctx *InstallContext, isAppImage bool) error {
 	iconsSrc := filepath.Join(ctx.InstallDir, "assets", "icons", "hicolor")
 	info, err := os.Stat(iconsSrc)
 	if err == nil && info.IsDir() {
-		return copyDir(iconsSrc, iconsDst)
+		if err := copyDir(iconsSrc, iconsDst); err != nil {
+			return err
+		}
+		if _, err := os.Stat(filepath.Join(iconsSrc, "256x256", "apps", "gozik.png")); err == nil {
+			return nil
+		}
 	}
 
-	// AppImage payloads may not ship a loose icon tree. Try to extract one
-	// from the AppImage itself, or fall back to a bundled gozik.png.
+	fallback := filepath.Join(ctx.InstallDir, "gozik.png")
+	if _, err := os.Stat(fallback); err == nil {
+		sizeDir := filepath.Join(iconsDst, "256x256", "apps")
+		if err := os.MkdirAll(sizeDir, 0755); err != nil {
+			return err
+		}
+		return copyFile(fallback, filepath.Join(sizeDir, "gozik.png"), 0644)
+	}
+
 	if isAppImage {
 		appImagePath := ""
 		entries, _ := os.ReadDir(ctx.InstallDir)
@@ -137,22 +150,15 @@ func installIcons(ctx *InstallContext, isAppImage bool) error {
 		}
 	}
 
-	fallback := filepath.Join(ctx.InstallDir, "gozik.png")
-	if _, err := os.Stat(fallback); err == nil {
-		sizeDir := filepath.Join(iconsDst, "256x256", "apps")
-		if err := os.MkdirAll(sizeDir, 0755); err != nil {
-			return err
-		}
-		return copyFile(fallback, filepath.Join(sizeDir, "gozik.png"), 0644)
-	}
-
 	return fmt.Errorf("no icon source found in payload")
 }
 
 // extractAppImageIcon runs an AppImage with --appimage-extract to pull out
-// the icon tree. This is best-effort: it may fail if FUSE is unavailable,
-// in which case the caller falls back to gozik.png.
+// the icon tree without mounting it.
 func extractAppImageIcon(appImage, extractDir, iconsDst string) error {
+	if err := os.MkdirAll(extractDir, 0755); err != nil {
+		return err
+	}
 	cmd := exec.Command(appImage, "--appimage-extract", "usr/share/icons/hicolor/*/*/*")
 	cmd.Dir = extractDir
 	cmd.Stdout = os.Stdout
@@ -208,21 +214,26 @@ func escapeDesktopExec(s string) string {
 }
 
 func updateIconCache(ctx *InstallContext) error {
+	var errs []error
 	iconsDir := filepath.Join(os.Getenv("HOME"), ".local", "share", "icons", "hicolor")
 	if _, err := exec.LookPath("gtk-update-icon-cache"); err == nil {
 		cmd := exec.Command("gtk-update-icon-cache", "-f", "-t", iconsDir)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		return cmd.Run()
+		if err := cmd.Run(); err != nil {
+			errs = append(errs, fmt.Errorf("update icon cache: %w", err))
+		}
 	}
 	if _, err := exec.LookPath("update-desktop-database"); err == nil {
 		appsDir := filepath.Join(os.Getenv("HOME"), ".local", "share", "applications")
 		cmd := exec.Command("update-desktop-database", "-q", appsDir)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		_ = cmd.Run()
+		if err := cmd.Run(); err != nil {
+			errs = append(errs, fmt.Errorf("update desktop database: %w", err))
+		}
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
 func copyDir(src, dst string) error {
