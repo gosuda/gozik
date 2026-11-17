@@ -29,7 +29,7 @@ env:
   PYINSTALLER_VERSION: '6.13.0'
   INNO_SETUP_VERSION: '6.4.2'
   PLUGIN_REPO: 'https://github.com/gosuda/gozik-yt-music.git'
-  PLUGIN_VERSION: 'v0.7'
+  PLUGIN_VERSION: 'v0.8'
   PLUGIN_DIR: 'gozik-yt-music'
   SPOTIFY_PLUGIN_REPO: 'https://github.com/gosuda/gozik-spotify.git'
   SPOTIFY_PLUGIN_VERSION: 'v0.7'

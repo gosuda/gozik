@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const PluginBundleVersion = "plugin-v0.7"
+const PluginBundleVersion = "plugin-v0.8"
 
 type Plugin struct {
 	ID          string
@@ -26,7 +26,7 @@ type Plugin struct {
 
 var Plugins = []Plugin{
 	{ID: "spotify", Name: "Spotify", Version: "v0.7", Description: "Spotify search and playback with yt-dlp included.", Repository: "https://github.com/gosuda/gozik-spotify", WebUI: "http://127.0.0.1:50055"},
-	{ID: "ytmusic", Name: "YouTube Music", Version: "v0.7", Description: "YouTube Music with its Python and Node.js runtime included.", Repository: "https://github.com/gosuda/gozik-yt-music", WebUI: "http://127.0.0.1:50053"},
+	{ID: "ytmusic", Name: "YouTube Music", Version: "v0.8", Description: "YouTube Music with its Python and Node.js runtime included.", Repository: "https://github.com/gosuda/gozik-yt-music", WebUI: "http://127.0.0.1:50053"},
 }
 
 type Progress func(message string)
