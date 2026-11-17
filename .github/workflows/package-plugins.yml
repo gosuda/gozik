@@ -993,7 +993,7 @@ jobs:
     name: 'Publish GitHub Release'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: success()
+    if: always() && contains(needs.*.result, 'success')
     needs:
       - build-windows
       - build-macos
