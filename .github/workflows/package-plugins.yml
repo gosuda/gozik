@@ -595,7 +595,7 @@ jobs:
           APPIMAGETOOL_EXEC='./appimagetool-extracted/AppRun'
           APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-amd64-${VERSION}.AppImage"
           ARCH=x86_64 "${APPIMAGETOOL_EXEC}" \
-            --comp zstd \
+            --comp xz \
             appdir-amd64 \
             "${APPIMAGE_OUT}"
           chmod +x "${APPIMAGE_OUT}"
@@ -738,7 +738,7 @@ jobs:
             chmod +x "${APPDIR}/AppRun"
             curl -fsSL -o runtime-aarch64 \
               'https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-aarch64'
-            mksquashfs "${APPDIR}" gozik-arm64.squashfs -root-owned -noappend -comp zstd
+            mksquashfs "${APPDIR}" gozik-arm64.squashfs -root-owned -noappend -comp xz
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-arm64-${VERSION}.AppImage"
             cat runtime-aarch64 gozik-arm64.squashfs > "${APPIMAGE_OUT}"
@@ -877,7 +877,7 @@ jobs:
             chmod +x "${APPDIR}/AppRun"
             curl -fsSL -o runtime-riscv64 \
               'https://github.com/redpanda-cpp/appimage-riscv64/releases/download/20230808.0/runtime-riscv64'
-            mksquashfs "${APPDIR}" gozik-riscv64.squashfs -root-owned -noappend -comp zstd
+            mksquashfs "${APPDIR}" gozik-riscv64.squashfs -root-owned -noappend -comp xz
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-riscv64-${VERSION}.AppImage"
             cat runtime-riscv64 gozik-riscv64.squashfs > "${APPIMAGE_OUT}"
