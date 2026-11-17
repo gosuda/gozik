@@ -43,7 +43,8 @@ jobs:
           mkdir -p payload
           cp -L dist/gozik-amd64.AppImage payload/gozik-amd64.AppImage
           chmod +x payload/gozik-amd64.AppImage
-          cp gozik.png payload/gozik.png
+          mkdir -p payload/assets/icons
+          cp -R assets/icons/hicolor payload/assets/icons/
           tar -czf gozik-payload-linux-amd64.tar.gz -C payload .
 
       - uses: actions/upload-artifact@v4
@@ -339,7 +340,8 @@ jobs:
           ./build_appimage.sh "${{ matrix.arch }}"
           mkdir -p payload
           cp "dist/gozik-${{ matrix.arch }}.AppImage" payload/
-          cp gozik.png payload/gozik.png
+          mkdir -p payload/assets/icons
+          cp -R assets/icons/hicolor payload/assets/icons/
           tar -czf "gozik-payload-linux-${{ matrix.arch }}.tar.gz" -C payload .
 
       - uses: actions/upload-artifact@v4

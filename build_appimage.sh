@@ -264,7 +264,7 @@ fi
 # ---------------------------------------------------------------------------
 echo "[5/8] Setting up desktop entry, icon and UI assets..."
 cp "${PROJECT_ROOT}/assets/gozik.desktop" "${APPDIR}/usr/share/applications/"
-cp "${PROJECT_ROOT}/gozik.png" "${APPDIR}/usr/share/icons/hicolor/256x256/apps/"
+cp -R "${PROJECT_ROOT}/assets/icons/hicolor/." "${APPDIR}/usr/share/icons/hicolor/"
 ln -sf usr/share/applications/gozik.desktop "${APPDIR}/gozik.desktop" || true
 ln -sf usr/share/icons/hicolor/256x256/apps/gozik.png "${APPDIR}/.DirIcon" || true
 ln -sf usr/share/icons/hicolor/256x256/apps/gozik.png "${APPDIR}/gozik.png" || true

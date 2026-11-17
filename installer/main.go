@@ -28,7 +28,7 @@ var (
 	progressMu sync.RWMutex
 	progress   = InstallProgress{Step: "Ready", Percent: 0, Log: ""}
 
-	defaultVersion = "v0.8"
+	defaultVersion = "v0.9"
 )
 
 type InstallProgress struct {

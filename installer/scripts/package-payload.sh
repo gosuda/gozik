@@ -53,11 +53,10 @@ package_linux() {
   mkdir -p "$stage"
   cp -L "$appimage" "$stage/gozik-${arch}.AppImage"
   chmod +x "$stage/gozik-${arch}.AppImage"
-  # Include a loose icon so the installer can install it without having to
-  # extract the AppImage (which may fail when FUSE is unavailable).
-  if [[ -f "$PROJECT_ROOT/gozik.png" ]]; then
-    cp "$PROJECT_ROOT/gozik.png" "$stage/gozik.png"
-  fi
+  # Include the icon theme so the installer does not need to extract the
+  # AppImage (which may fail when FUSE is unavailable).
+  mkdir -p "$stage/assets/icons"
+  cp -R "$PROJECT_ROOT/assets/icons/hicolor" "$stage/assets/icons/"
   tar -czf "$OUTPUT_DIR/gozik-payload-linux-${arch}.tar.gz" -C "$stage" .
   echo "Created gozik-payload-linux-${arch}.tar.gz"
 }

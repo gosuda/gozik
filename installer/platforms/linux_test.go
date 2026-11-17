@@ -8,6 +8,34 @@ import (
 	"testing"
 )
 
+func TestInstallIconsPrefersPayloadIconTreeOverPreview(t *testing.T) {
+	home := t.TempDir()
+	installDir := t.TempDir()
+	t.Setenv("HOME", home)
+	iconDir := filepath.Join(installDir, "assets", "icons", "hicolor", "256x256", "apps")
+	if err := os.MkdirAll(iconDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	want := []byte("icon payload")
+	if err := os.WriteFile(filepath.Join(iconDir, "gozik.png"), want, 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(installDir, "gozik.png"), []byte("preview payload"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := installIcons(&InstallContext{InstallDir: installDir}, false); err != nil {
+		t.Fatalf("installIcons: %v", err)
+	}
+	got, err := os.ReadFile(filepath.Join(home, ".local", "share", "icons", "hicolor", "256x256", "apps", "gozik.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(want) {
+		t.Fatalf("installed icon = %q, want %q", got, want)
+	}
+}
+
 func TestInstallIconsFallsBackWhenPayloadIconTreeIsEmpty(t *testing.T) {
 	home := t.TempDir()
 	installDir := t.TempDir()
