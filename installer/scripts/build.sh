@@ -6,16 +6,17 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 INSTALLER_DIR="${PROJECT_ROOT}/installer"
 OUTPUT_DIR="${1:-${INSTALLER_DIR}/dist}"
-DEFAULT_VERSION="${2:-${INSTALLER_DEFAULT_VERSION:-v0.9}}"
+DEFAULT_VERSION="${2:-${INSTALLER_DEFAULT_VERSION:-v0.10}}"
 
 mkdir -p "$OUTPUT_DIR"
 
 cd "$INSTALLER_DIR"
 
 # Targets supported by the payload assets published on GitHub Releases.
+# Depot has no Windows ARM64 host for the GTK payload; do not publish an
+# installer that would request a missing ARM64 payload.
 TARGETS=(
   "windows amd64 .exe"
-  "windows arm64 .exe"
   "darwin arm64 "
   "linux amd64 "
   "linux arm64 "
@@ -51,3 +52,4 @@ done
 echo ""
 echo "Installers and Uninstallers written to ${OUTPUT_DIR}/"
 ls -lh "${OUTPUT_DIR}"
+

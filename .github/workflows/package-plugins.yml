@@ -2,11 +2,6 @@ name: Package Plugins
 
 on:
   push:
-    branches:
-      - main
-      - master
-    paths:
-      - '.github/workflows/package-plugins.yml'
     tags:
       - 'plugin-v*'
   workflow_dispatch:
@@ -22,14 +17,14 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   PYTHON_VERSION: '3.13'
   PYINSTALLER_VERSION: '6.13.0'
   INNO_SETUP_VERSION: '6.4.2'
   PLUGIN_REPO: 'https://github.com/gosuda/gozik-yt-music.git'
-  PLUGIN_VERSION: 'v0.7'
+  PLUGIN_VERSION: 'v0.8'
   PLUGIN_DIR: 'gozik-yt-music'
   SPOTIFY_PLUGIN_REPO: 'https://github.com/gosuda/gozik-spotify.git'
   SPOTIFY_PLUGIN_VERSION: 'v0.7'
@@ -49,21 +44,13 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            runs-on: windows-latest
+            runs-on: depot-windows-2025-4
             allow-failure: false
             python-arch: x64
             artifact-suffix: 'windows-amd64'
             installer-arch: 'x64Compatible'
             node-archive: 'node-v22.14.0-win-x64.zip'
             node-url: 'https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip'
-          - arch: arm64
-            runs-on: windows-11-arm
-            allow-failure: true
-            python-arch: arm64
-            artifact-suffix: 'windows-arm64'
-            installer-arch: 'arm64'
-            node-archive: 'node-v22.14.0-win-arm64.zip'
-            node-url: 'https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-arm64.zip'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,13 +65,6 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.python-arch }}
-      - name: Constrain setuptools for Windows ARM64
-        if: matrix.arch == 'arm64'
-        shell: powershell
-        run: |
-          $constraints = "$env:RUNNER_TEMP\gozik-pip-constraints.txt"
-          Set-Content -Path $constraints -Value "setuptools<84"
-          "PIP_CONSTRAINT=$constraints" >> $env:GITHUB_ENV
       - name: Install Python dependencies
         shell: powershell
         run: |
@@ -286,7 +266,7 @@ jobs:
 
   build-macos:
     name: 'macOS ARM64 — PyInstaller + create-dmg'
-    runs-on: macos-latest
+    runs-on: depot-macos-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -487,7 +467,7 @@ jobs:
 
   build-linux-amd64:
     name: 'Linux AMD64 — PyInstaller + AppImage'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -595,7 +575,7 @@ jobs:
           APPIMAGETOOL_EXEC='./appimagetool-extracted/AppRun'
           APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-amd64-${VERSION}.AppImage"
           ARCH=x86_64 "${APPIMAGETOOL_EXEC}" \
-            --comp zstd \
+            --comp xz \
             appdir-amd64 \
             "${APPIMAGE_OUT}"
           chmod +x "${APPIMAGE_OUT}"
@@ -615,7 +595,7 @@ jobs:
 
   build-linux-arm64:
     name: 'Linux ARM64 — QEMU + PyInstaller + AppImage'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
@@ -738,7 +718,7 @@ jobs:
             chmod +x "${APPDIR}/AppRun"
             curl -fsSL -o runtime-aarch64 \
               'https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-aarch64'
-            mksquashfs "${APPDIR}" gozik-arm64.squashfs -root-owned -noappend -comp zstd
+            mksquashfs "${APPDIR}" gozik-arm64.squashfs -root-owned -noappend -comp xz
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-arm64-${VERSION}.AppImage"
             cat runtime-aarch64 gozik-arm64.squashfs > "${APPIMAGE_OUT}"
@@ -754,7 +734,7 @@ jobs:
 
   build-linux-riscv64:
     name: 'Linux RISCV64 — QEMU + PyInstaller + AppImage'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
@@ -877,7 +857,7 @@ jobs:
             chmod +x "${APPDIR}/AppRun"
             curl -fsSL -o runtime-riscv64 \
               'https://github.com/redpanda-cpp/appimage-riscv64/releases/download/20230808.0/runtime-riscv64'
-            mksquashfs "${APPDIR}" gozik-riscv64.squashfs -root-owned -noappend -comp zstd
+            mksquashfs "${APPDIR}" gozik-riscv64.squashfs -root-owned -noappend -comp xz
             mkdir -p dist-appimage
             APPIMAGE_OUT="dist-appimage/gozik-ytmusic-plugin-linux-riscv64-${VERSION}.AppImage"
             cat runtime-riscv64 gozik-riscv64.squashfs > "${APPIMAGE_OUT}"
@@ -893,7 +873,7 @@ jobs:
 
   build-spotify:
     name: 'Spotify ${{ matrix.os }}/${{ matrix.arch }} — Go bundle'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -991,7 +971,7 @@ jobs:
 
   release:
     name: 'Publish GitHub Release'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 15
     if: always() && contains(needs.*.result, 'success')
     needs:
@@ -1072,3 +1052,4 @@ jobs:
           echo '' >> "$GITHUB_STEP_SUMMARY"
           echo 'Push a \`plugin-v*\` tag to publish these artefacts as a GitHub Release.' \
             >> "$GITHUB_STEP_SUMMARY"
+
