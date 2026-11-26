@@ -149,7 +149,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - os: depot-macos-latest
             arch: arm64
             output: gozik-darwin-arm64
     runs-on: ${{ matrix.os }}

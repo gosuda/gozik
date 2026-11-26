@@ -149,7 +149,7 @@ jobs:
           path: gozik-windows-${{ matrix.arch }}.exe
 
   build-macos-installer-payload:
-    runs-on: macos-latest
+    runs-on: depot-macos-latest
     steps:
       - uses: actions/checkout@v4
 
