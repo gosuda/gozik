@@ -2,11 +2,6 @@ name: Package Plugins
 
 on:
   push:
-    branches:
-      - main
-      - master
-    paths:
-      - '.github/workflows/package-plugins.yml'
     tags:
       - 'plugin-v*'
   workflow_dispatch:
@@ -22,7 +17,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   PYTHON_VERSION: '3.13'
@@ -49,21 +44,13 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            runs-on: windows-latest
+            runs-on: depot-windows-2025-4
             allow-failure: false
             python-arch: x64
             artifact-suffix: 'windows-amd64'
             installer-arch: 'x64Compatible'
             node-archive: 'node-v22.14.0-win-x64.zip'
             node-url: 'https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip'
-          - arch: arm64
-            runs-on: windows-11-arm
-            allow-failure: true
-            python-arch: arm64
-            artifact-suffix: 'windows-arm64'
-            installer-arch: 'arm64'
-            node-archive: 'node-v22.14.0-win-arm64.zip'
-            node-url: 'https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-arm64.zip'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,13 +65,6 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.python-arch }}
-      - name: Constrain setuptools for Windows ARM64
-        if: matrix.arch == 'arm64'
-        shell: powershell
-        run: |
-          $constraints = "$env:RUNNER_TEMP\gozik-pip-constraints.txt"
-          Set-Content -Path $constraints -Value "setuptools<84"
-          "PIP_CONSTRAINT=$constraints" >> $env:GITHUB_ENV
       - name: Install Python dependencies
         shell: powershell
         run: |
@@ -487,7 +467,7 @@ jobs:
 
   build-linux-amd64:
     name: 'Linux AMD64 — PyInstaller + AppImage'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -615,7 +595,7 @@ jobs:
 
   build-linux-arm64:
     name: 'Linux ARM64 — QEMU + PyInstaller + AppImage'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
@@ -754,7 +734,7 @@ jobs:
 
   build-linux-riscv64:
     name: 'Linux RISCV64 — QEMU + PyInstaller + AppImage'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
@@ -893,7 +873,7 @@ jobs:
 
   build-spotify:
     name: 'Spotify ${{ matrix.os }}/${{ matrix.arch }} — Go bundle'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -991,7 +971,7 @@ jobs:
 
   release:
     name: 'Publish GitHub Release'
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 15
     if: always() && contains(needs.*.result, 'success')
     needs:
@@ -1072,3 +1052,4 @@ jobs:
           echo '' >> "$GITHUB_STEP_SUMMARY"
           echo 'Push a \`plugin-v*\` tag to publish these artefacts as a GitHub Release.' \
             >> "$GITHUB_STEP_SUMMARY"
+
