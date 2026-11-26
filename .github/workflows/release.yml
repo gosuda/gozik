@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-linux-installer-payload:
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     steps:
       - uses: actions/checkout@v4
 
@@ -45,7 +45,7 @@ jobs:
         include:
           - arch: amd64
             allow_failure: false
-            runs-on: windows-latest
+            runs-on: depot-windows-2025-4
             msystem: MINGW64
             mingw-prefix: mingw64
             cc: gcc
@@ -58,21 +58,6 @@ jobs:
               mingw-w64-x86_64-pkg-config
               mingw-w64-x86_64-ntldd
             ffmpeg-url: "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
-          - arch: arm64
-            allow_failure: true
-            runs-on: windows-11-arm
-            msystem: CLANGARM64
-            mingw-prefix: clangarm64
-            cc: clang
-            output: gozik-windows-arm64
-            msys2-packages: >-
-              mingw-w64-clang-aarch64-toolchain
-              mingw-w64-clang-aarch64-gtk3
-              mingw-w64-clang-aarch64-opus
-              mingw-w64-clang-aarch64-opusfile
-              mingw-w64-clang-aarch64-pkg-config
-              mingw-w64-clang-aarch64-ntldd
-            ffmpeg-url: "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-winarm64-gpl.zip"
     steps:
       - uses: actions/checkout@v4
 
@@ -87,21 +72,6 @@ jobs:
           cache: false
           path-type: inherit
           install: ${{ matrix.msys2-packages }}
-
-      - name: Patch gotk3 for Windows ARM64
-        if: matrix.arch == 'arm64'
-        shell: msys2 {0}
-        run: |
-          go mod download github.com/gotk3/gotk3
-          GOTK3_VERSION=$(grep 'github.com/gotk3/gotk3' go.mod | awk '{print $2}')
-          GOMODCACHE=$(cygpath -u "$(go env GOMODCACHE)")
-          GOTK3_DIR="${GOMODCACHE}/github.com/gotk3/gotk3@${GOTK3_VERSION}"
-          if [ -d "$GOTK3_DIR" ]; then
-            find "$GOTK3_DIR" -name '*.go.h' -print0 | xargs -0 sed -i \
-              -e 's/^extern void /extern __declspec(dllexport) void /' \
-              -e 's/^extern gboolean /extern __declspec(dllexport) gboolean /' \
-              -e 's/^extern gint /extern __declspec(dllexport) gint /'
-          fi
 
       - name: Build gozik
         shell: msys2 {0}
@@ -149,7 +119,7 @@ jobs:
           path: gozik-windows-${{ matrix.arch }}.exe
 
   build-macos-installer-payload:
-    runs-on: macos-latest
+    runs-on: depot-macos-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -268,7 +238,7 @@ jobs:
           path: gozik-payload-macos-arm64.tar.gz
 
   build-linux-niche-installer-payload:
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     strategy:
       matrix:
         include:
@@ -325,7 +295,7 @@ jobs:
           path: gozik-payload-linux-${{ matrix.arch }}.tar.gz
 
   build-installer-binaries:
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     steps:
       - uses: actions/checkout@v4
 
@@ -350,7 +320,7 @@ jobs:
           path: installer/dist/gozik-uninstaller-*
 
   release:
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-4
     needs: [build-linux-installer-payload, build-windows-installer-payload, build-macos-installer-payload, build-linux-niche-installer-payload, build-installer-binaries]
     permissions:
       contents: write
@@ -382,4 +352,5 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: artifacts/*
           generate_release_notes: true
-          overwrite: true
+          overwrite_files: true
+
